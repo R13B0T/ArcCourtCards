@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arc's Court Card Tracker</title>
+    <title>Court Card Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,10 +55,11 @@
             padding: 10px;
             font-size: 16px;
         }
+        /* Center the New Game button */
         .reset-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            display: flex;
+            justify-content: center;
+            margin: 0 auto 30px auto; /* Adds space below the button */
             padding: 10px 20px;
             background-color: #f44336;
             color: white;
@@ -73,26 +74,16 @@
 </head>
 <body>
     <div class="container">
-        <div class="reset-container">
+        <!-- Centered New Game Button with Space -->
+        <div class="reset-container" style="text-align: center;">
             <button class="reset-button" onclick="resetSelections()">New Game</button>
         </div>
-        <hr> <!-- Add a line below the button -->
+
+        <!-- Space added between the button and the content -->
         <h1>Arc's Court Card Tracker</h1>
 
-        <!-- Filter Dropdown -->
-        <div class="filter-dropdown">
-            <select id="filter" onchange="filterCards(this.value)">
-                <option value="all">All</option>
-                <option value="court">Court</option>
-                <option value="red">Red</option>
-                <option value="blue">Blue</option>
-                <option value="gold">Gold</option>
-                <option value="white">White</option>
-            </select>
-        </div>
-
-        <!-- Card List -->
         <div id="card-list"></div>
+
     </div>
 
     <script>
