@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arc's Court Card Tracker</title>
+    <title>Court Card Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -181,11 +181,15 @@
 
         // Function to sort cards
         function sortCards() {
-            cards.sort((a, b) => {
-                const order = ["court", "red", "blue", "gold", "white", "none"];
-                return order.indexOf(a.player) - order.indexOf(b.player);
-            });
-        }
+            // First, sort alphabetically
+    cards.sort((a, b) => a.title.localeCompare(b.title));
+
+// Then, apply custom sorting based on the player (Court -> Red -> Blue -> Gold -> White -> None)
+cards.sort((a, b) => {
+    const order = ["court", "red", "blue", "gold", "white", "none"];
+    return order.indexOf(a.player) - order.indexOf(b.player);
+});
+}
 
         // Display cards when page loads
         window.onload = function () {
