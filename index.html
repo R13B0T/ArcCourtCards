@@ -81,6 +81,17 @@
 
         <!-- Space added between the button and the content -->
         <h1>Arc's Court Card Tracker</h1>
+        <!-- Filter Dropdown -->
+        <div class="filter-dropdown">
+            <select id="filter" onchange="filterCards(this.value)">
+                <option value="all">All</option>
+                <option value="court">Court</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="gold">Gold</option>
+                <option value="white">White</option>
+            </select>
+        </div>
 
         <div id="card-list"></div>
 
