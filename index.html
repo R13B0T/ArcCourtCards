@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc's Court Card Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: url('https://cdn.mos.cms.futurecdn.net/HuGGeENt6kGyixe3hT9tnY.jpg.webp');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .card {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .player-picker select {
+            padding: 5px;
+        }
+        .description {
+            padding-top: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .filter-dropdown {
+            display: flex;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+        }
+        .reset-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reset-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="reset-button" onclick="resetSelections()">New Game</button>
+        <h1>Arc's Court Card Tracker</h1>
+
+        <!-- Filter Dropdown -->
+        <div class="filter-dropdown">
+            <select id="filter" onchange="filterCards(this.value)">
+                <option value="all">All</option>
+                <option value="court">Court</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="gold">Gold</option>
+                <option value="white">White</option>
+            </select>
+        </div>
+
+        <!-- Card List -->
+        <div id="card-list"></div>
+    </div>
+
+    <script>
+        // Card data stored in an array of objects
+        const cards = [
+    { title: "LOYAL ENGINEERS (M)", description: "If you Provoke Outrage keep this card. You may spend any resources as Material. You ignore Outrage when spending Material for its Prelude action.", player: "none" },
+    { title: "GATEKEEPERS (F)", description: "When you battle in a gate you may collect 2 more dice. Prelude: You may discard this to place 1 ship in each gate (unless out of play).", player: "none" },
+    { title: "LOYAL MARINES (W)", description: "If you Provoke Outrage keep this card. You may spend any resources as Weapons. You ignore Outrage when spending Weapons for their Prelude action. Prelude: You may discard this to place 3 ships in a system you control.", player: "none" },
+    { title: "SWORN GUARDIANS (R)", description: "Rivals cannot steal your resources and other Guild cards. If this card is stolen, bury it. (Place it on the bottom of the Court deck.)", player: "none" },
+    { title: "SONG OF FREEDOM (V)", description: "When Secured: You may return any one city you control to its player board. If you do, you may seize the initiative.", player: "none" },
+    { title: "MINING INTEREST (M)", description: "Manufacture (Build): Gain 1 Material. Prelude: You may discard this to gain Material up to your number of empty resource slots.", player: "none" },
+    { title: "SHIPPING INTEREST (F)", description: "Synthesize (Build): Gain 1 Fuel. Prelude: You may discard this to gain Fuel up to your number of empty resource slots.", player: "none" },
+    { title: "LATTICE SPIES (P)", description: "Prelude: Before any other actions, you may discard this to seize the initiative. You can't seize the initiative if you have it or if it's already seized this round!", player: "none" },
+    { title: "ELDER BROKER (R)", description: "Trade (Tax): Choose a Rival city you control. Swap 1 resource with that Rival. Prelude: You may discard this to gain 1 Material, 1 Fuel, and 1 Weapon.", player: "none" },
+    { title: "GUILD STRUGGLE (V)", description: "When Secured: You may steal 1 Guild card from a Rival. Shuffle all Guild cards from the Court discard pile into the Court deck. Discard Guild Struggle.", player: "none" },
+    { title: "MATERIAL CARTEL (M)", description: "You keep the Material supply on here. After scoring, Rivals discard all Material. Prelude: You may discard this to steal 1 Material.", player: "none" },
+    { title: "SPACING UNION (F)", description: "Prelude: You may place this card next to a face-up played Mobilization card. When the round ends, draw that card into your hand and discard this card.", player: "none" },
+    { title: "CALL TO ACTION (V)", description: "When Secured: Draw 1 action card from the bottom of the action discard pile. Discard Call to Action.", player: "none" },
+    { title: "FARSEERS (P)", description: "When you declare an ambition, look at a Rival's hand. You may swap cards with them. Prelude: You may discard this and any number of cards from your hand.", player: "none" },
+    { title: "RELIC FENCE (R)", description: "Prelude: Once per turn, you may discard 1 resource to gain 1 Relic.", player: "none" },
+    { title: "ADMIN UNION (M)", description: "Prelude: You may place this card next to a face-up played Administration card. When the round ends, draw that card into your hand and discard this card.", player: "none" },
+    { title: "ARMS UNION (W)", description: "Prelude: You may place this card next to a face-up played Aggression card. When the round ends, draw that card into your hand and discard this card.", player: "none" },
+    { title: "SECRET ORDER (P)", description: "When you declare Keeper or Empath, do not place the zero marker.", player: "none" },
+    { title: "GALACTIC BARDS (R)", description: "When you Surpass or Pivot, before taking any actions, you may declare the ambition on your played card if an ambition has not been declared yet this round.", player: "none" },
+    { title: "CONSTRUCTION UNION (M)", description: "Prelude: You may place this card next to a face-up played Construction card. When the round ends, draw that card into your hand and discard this card.", player: "none" },
+    { title: "PRISON WARDENS (W)", description: "Pressgang (Build): Return any number of your Captives to gain any 1 resource for each. Execute (Influence): Move any number of your captives to your trophies.", player: "none" },
+    { title: "LOYAL EMPATHS (P)", description: "If you Provoke Outrage keep this card. You may spend any resources as Psionic. You ignore Outrage when spending Psionic for its Prelude action.", player: "none" },
+    { title: "MASS UPRISING (V)", description: "When Secured: Choose a cluster on the map. You place 1 ship in each system of that cluster. Discard this card.", player: "none" },
+    { title: "FUEL CARTEL (F)", description: "You keep the Fuel supply on here. After scoring, Rivals discard all Fuel. Prelude: You may discard this to steal 1 Fuel.", player: "none" },
+    { title: "SKIRMISHERS (W)", description: "After you roll in battle, you may reroll a number of skirmish dice up to your total Weapon icons from resources and cards.", player: "none" },
+    { title: "SILVER-TONGUES (P)", description: "Prelude: You may discard this to steal a Guild card or resource.", player: "none" },
+    { title: "POPULIST DEMANDS (V)", description: "When Secured: You may declare any ambition. (An ambition marker must be available.) Discard this card.", player: "none" },
+    { title: "LOYAL PILOTS (F)", description: "If you Provoke Outrage keep this card. You may spend any resources as Fuel. You ignore Outrage when spending Fuel for its Prelude action.", player: "none" },
+    { title: "COURT ENFORCERS (W)", description: "Abduct (Battle): Capture all Rival agents from a card in the Court that has fewer Rival agents than your total Weapon icons from resources and cards.", player: "none" },
+    { title: "LOYAL KEEPERS (R)", description: "If you Provoke Outrage keep this card. You may spend any resources as Relics. You ignore Outrage when spending Relics for their Prelude action.", player: "none" },
+    { title: "OUTRAGE SPREADS (V)", description: "When Secured: You may choose an Outrage type. Each player (even you) must Provoke Outrage of that type. Discard this card.", player: "none" }
+];
+
+
+      // Custom sort order based on the player (Court -> Red -> Blue -> Gold -> White -> None)
+      const playerOrder = {
+            "court": 1,
+            "red": 2,
+            "blue": 3,
+            "gold": 4,
+            "white": 5,
+            "none": 6 // None is now clearly defined and set to the lowest priority
+        };
+
+        // Sort cards by custom sorting: Court at the top, followed by grouped colours
+        function sortCards() {
+            cards.sort((a, b) => {
+                // Sort by custom player order
+                if (playerOrder[a.player] !== playerOrder[b.player]) {
+                    return playerOrder[a.player] - playerOrder[b.player];
+                }
+
+                // If player colours are the same, sort alphabetically by title
+                return a.title.localeCompare(b.title);
+            });
+        }
+
+        // Function to display sorted cards
+        function displayCards() {
+            const cardList = document.getElementById("card-list");
+            cardList.innerHTML = ""; // Clear any existing cards
+
+            cards.forEach(card => {
+                const cardElement = document.createElement("div");
+                cardElement.classList.add("card");
+
+                // Card title
+                const titleElement = document.createElement("span");
+                titleElement.style.fontWeight = "bold";
+                titleElement.innerText = card.title;
+
+                // Card description
+                const descriptionElement = document.createElement("div");
+                descriptionElement.classList.add("description");
+                descriptionElement.style.paddingTop = "5px";
+                descriptionElement.innerText = card.description;
+
+                // Player picker
+                const playerPickerElement = document.createElement("div");
+                playerPickerElement.classList.add("player-picker");
+                const selectElement = document.createElement("select");
+
+                // Add None option first and set it as default
+                const noneOption = document.createElement("option");
+                noneOption.value = "none";
+                noneOption.text = "None";
+                selectElement.appendChild(noneOption);
+
+                // Add court option second
+                const courtOption = document.createElement("option");
+                courtOption.value = "court";
+                courtOption.text = "Court";
+                selectElement.appendChild(courtOption);
+
+                // Add other options sorted alphabetically
+                ["red", "blue", "gold", "white"].forEach(option => {
+                    const optionElement = document.createElement("option");
+                    optionElement.value = option;
+                    optionElement.text = option.charAt(0).toUpperCase() + option.slice(1);
+                    selectElement.appendChild(optionElement);
+                });
+
+                // Set the value of the select element to the player's value, defaulting to 'none'
+                selectElement.value = card.player || "none";
+
+                selectElement.addEventListener('change', function () {
+                    assignPlayer(card, this.value);
+                });
+
+                playerPickerElement.appendChild(selectElement);
+                cardElement.appendChild(titleElement);
+                cardElement.appendChild(descriptionElement);
+                cardElement.appendChild(playerPickerElement);
+
+                cardList.appendChild(cardElement);
+            });
+        }
+
+        // Function to assign player and move selected cards to the top
+        function assignPlayer(card, player) {
+            card.player = player;
+            sortCards(); // Sort after assignment to group the cards
+            displayCards(); // Re-display sorted cards
+        }
+
+        // Display cards when page loads
+        window.onload = function () {
+    console.log("Cards before sorting:", cards); // Log card data before sorting
+    sortCards(); // Sort the cards first
+    displayCards(); // Then display them
+};
+
+        // Resetting all selections to 'None'
+        function resetSelections() {
+            cards.forEach(card => card.player = "none"); // Reset all players to 'None'
+            sortCards(); // Re-sort the cards by custom player order
+            displayCards(); // Re-display the sorted cards
+            filterCards('all'); // Reset the filter to display all cards after reset
+        }
+
+        // Filtering cards based on the selected filter
+        function filterCards(filter) {
+            document.querySelectorAll('.card').forEach(card => {
+                const player = card.querySelector('.player-picker select').value;
+                if (filter === 'all') {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = (player === filter) ? 'flex' : 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
