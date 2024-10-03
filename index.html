@@ -33,11 +33,11 @@
             border-radius: 8px;
             background-color: #f9f9f9;
         }
-        .player-picker select {
-            padding: 5px;
+        .player-picker {
+            margin-top: 10px; /* Adds space between title and dropdown */
         }
         .description {
-            padding-top: 5px;
+            padding-top: 10px; /* Adds space between dropdown and description */
             font-size: 14px;
             color: #555;
         }
@@ -55,11 +55,10 @@
             padding: 10px;
             font-size: 16px;
         }
-        /* Center the New Game button */
         .reset-button {
             display: flex;
             justify-content: center;
-            margin: 0 auto 30px auto; /* Adds space below the button */
+            margin: 0 auto 30px auto;
             padding: 10px 20px;
             background-color: #f44336;
             color: white;
@@ -134,121 +133,121 @@
 ];
 
 
-      // Custom sort order based on the player (Court -> Red -> Blue -> Gold -> White -> None)
-      const playerOrder = {
-            "court": 1,
-            "red": 2,
-            "blue": 3,
-            "gold": 4,
-            "white": 5,
-            "none": 6 // None is now clearly defined and set to the lowest priority
-        };
+      // Function to display sorted cards
+      function displayCards() {
+            const cardList = document.getElementById("card-list");
+            cardList.innerHTML = "";
 
-        // Sort cards by custom sorting: Court at the top, followed by grouped colours
+            cards.forEach((card, index) => {
+                const cardDiv = document.createElement("div");
+                cardDiv.classList.add("card");
+
+                const title = document.createElement("span");
+                title.style.fontWeight = "bold";
+                title.textContent = card.title;
+
+                const description = document.createElement("div");
+                description.classList.add("description");
+                description.style.display = card.player === "none" ? "none" : "block"; // Show only if player is selected
+                description.textContent = card.description;
+
+                const playerPicker = document.createElement("div");
+                playerPicker.classList.add("player-picker");
+
+                const select = document.createElement("select");
+                select.innerHTML = `
+                    <option value="none" ${card.player === "none" ? "selected" : ""}>None</option>
+                    <option value="court" ${card.player === "court" ? "selected" : ""}>Court</option>
+                    <option value="red" ${card.player === "red" ? "selected" : ""}>Red</option>
+                    <option value="blue" ${card.player === "blue" ? "selected" : ""}>Blue</option>
+                    <option value="gold" ${card.player === "gold" ? "selected" : ""}>Gold</option>
+                    <option value="white" ${card.player === "white" ? "selected" : ""}>White</option>
+                `;
+                select.addEventListener("change", function () {
+                    card.player = this.value;
+                    description.style.display = card.player === "none" ? "none" : "block"; // Show description only if player is not "none"
+                    sortCards();
+                    displayCards();
+                });
+
+                playerPicker.appendChild(select);
+                cardDiv.appendChild(title);
+                cardDiv.appendChild(description);
+                cardDiv.appendChild(playerPicker);
+
+                cardList.appendChild(cardDiv);
+            });
+        }
+
+        // Function to sort cards
         function sortCards() {
             cards.sort((a, b) => {
-                // Sort by custom player order
-                if (playerOrder[a.player] !== playerOrder[b.player]) {
-                    return playerOrder[a.player] - playerOrder[b.player];
-                }
-
-                // If player colours are the same, sort alphabetically by title
-                return a.title.localeCompare(b.title);
+                const order = ["court", "red", "blue", "gold", "white", "none"];
+                return order.indexOf(a.player) - order.indexOf(b.player);
             });
-        }
-
-        // Function to display sorted cards
-        function displayCards() {
-            const cardList = document.getElementById("card-list");
-            cardList.innerHTML = ""; // Clear any existing cards
-
-            cards.forEach(card => {
-                const cardElement = document.createElement("div");
-                cardElement.classList.add("card");
-
-                // Card title
-                const titleElement = document.createElement("span");
-                titleElement.style.fontWeight = "bold";
-                titleElement.innerText = card.title;
-
-                // Card description
-                const descriptionElement = document.createElement("div");
-                descriptionElement.classList.add("description");
-                descriptionElement.style.paddingTop = "5px";
-                descriptionElement.innerText = card.description;
-
-                // Player picker
-                const playerPickerElement = document.createElement("div");
-                playerPickerElement.classList.add("player-picker");
-                const selectElement = document.createElement("select");
-
-                // Add None option first and set it as default
-                const noneOption = document.createElement("option");
-                noneOption.value = "none";
-                noneOption.text = "None";
-                selectElement.appendChild(noneOption);
-
-                // Add court option second
-                const courtOption = document.createElement("option");
-                courtOption.value = "court";
-                courtOption.text = "Court";
-                selectElement.appendChild(courtOption);
-
-                // Add other options sorted alphabetically
-                ["red", "blue", "gold", "white"].forEach(option => {
-                    const optionElement = document.createElement("option");
-                    optionElement.value = option;
-                    optionElement.text = option.charAt(0).toUpperCase() + option.slice(1);
-                    selectElement.appendChild(optionElement);
-                });
-
-                // Set the value of the select element to the player's value, defaulting to 'none'
-                selectElement.value = card.player || "none";
-
-                selectElement.addEventListener('change', function () {
-                    assignPlayer(card, this.value);
-                });
-
-                playerPickerElement.appendChild(selectElement);
-                cardElement.appendChild(titleElement);
-                cardElement.appendChild(descriptionElement);
-                cardElement.appendChild(playerPickerElement);
-
-                cardList.appendChild(cardElement);
-            });
-        }
-
-        // Function to assign player and move selected cards to the top
-        function assignPlayer(card, player) {
-            card.player = player;
-            sortCards(); // Sort after assignment to group the cards
-            displayCards(); // Re-display sorted cards
         }
 
         // Display cards when page loads
         window.onload = function () {
-    console.log("Cards before sorting:", cards); // Log card data before sorting
-    sortCards(); // Sort the cards first
-    displayCards(); // Then display them
-};
+            sortCards(); // Sort the cards first
+            displayCards(); // Then display them
+        };
 
-        // Resetting all selections to 'None'
+        // Reset all selections to "None"
         function resetSelections() {
-            cards.forEach(card => card.player = "none"); // Reset all players to 'None'
-            sortCards(); // Re-sort the cards by custom player order
-            displayCards(); // Re-display the sorted cards
-            filterCards('all'); // Reset the filter to display all cards after reset
+            cards.forEach(card => card.player = "none");
+            sortCards();
+            displayCards();
         }
 
-        // Filtering cards based on the selected filter
+        // Filtering logic
         function filterCards(filter) {
-            document.querySelectorAll('.card').forEach(card => {
-                const player = card.querySelector('.player-picker select').value;
-                if (filter === 'all') {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = (player === filter) ? 'flex' : 'none';
-                }
+            const cardList = document.getElementById("card-list");
+            cardList.innerHTML = "";
+
+            let filteredCards = cards;
+            if (filter !== "all") {
+                filteredCards = cards.filter(card => card.player === filter);
+            }
+
+            filteredCards.forEach(card => {
+                const cardDiv = document.createElement("div");
+                cardDiv.classList.add("card");
+
+                const title = document.createElement("span");
+                title.style.fontWeight = "bold";
+                title.textContent = card.title;
+
+                const description = document.createElement("div");
+                description.classList.add("description");
+                description.style.display = card.player === "none" ? "none" : "block";
+                description.textContent = card.description;
+
+                const playerPicker = document.createElement("div");
+                playerPicker.classList.add("player-picker");
+
+                const select = document.createElement("select");
+                select.innerHTML = `
+                    <option value="none" ${card.player === "none" ? "selected" : ""}>None</option>
+                    <option value="court" ${card.player === "court" ? "selected" : ""}>Court</option>
+                    <option value="red" ${card.player === "red" ? "selected" : ""}>Red</option>
+                    <option value="blue" ${card.player === "blue" ? "selected" : ""}>Blue</option>
+                    <option value="gold" ${card.player === "gold" ? "selected" : ""}>Gold</option>
+                    <option value="white" ${card.player === "white" ? "selected" : ""}>White</option>
+                `;
+                select.addEventListener("change", function () {
+                    card.player = this.value;
+                    description.style.display = card.player === "none" ? "none" : "block"; // Show description only if player is not "none"
+                    sortCards();
+                    displayCards();
+                });
+
+                playerPicker.appendChild(select);
+                cardDiv.appendChild(title);
+                cardDiv.appendChild(description);
+                cardDiv.appendChild(playerPicker);
+
+                cardList.appendChild(cardDiv);
             });
         }
     </script>
